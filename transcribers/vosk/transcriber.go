@@ -58,6 +58,11 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 	recognizer.SetMaxAlternatives(0)
 	recognizer.SetWords(1)
 
+	progressCallback := options.ProgressCallback
+	if progressCallback == nil {
+		progressCallback = func(t transcribers.TextLine) {}
+	}
+
 	//-ar              | sampling rate
 	//-af volume=1.75  | boost the volume
 	//-ac              | # of audio channels
@@ -86,7 +91,11 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 			currentResult := fromString(recognizer.Result())
 
 			if len(currentResult.Words) > 0 {
-				results = append(results, toTextLine(currentResult))
+				textLine := toTextLine(currentResult)
+
+				results = append(results, textLine)
+
+				progressCallback(textLine)
 			}
 		}
 	}
