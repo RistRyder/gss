@@ -6,6 +6,7 @@ At the moment there is a transcription API to generate text from an input audio 
 ## Example - Offline Audio Transcription with [Vosk](https://alphacephei.com/vosk/)
 ```go
 //See https://github.com/alphacep/vosk-api/tree/master/go/example for Vosk installation, ensure all environment variables are set
+//Vosk models available at https://alphacephei.com/vosk/models
 //Also requires a local copy of ffmpeg
 
 package main
