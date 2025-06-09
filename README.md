@@ -2,8 +2,9 @@
 This library aims to provide functionality for manipulating subtitles and is currently pre-release.
 
 At the moment there is a transcription API to generate text from an input audio or video file using the following:
-[Vosk](https://alphacephei.com/vosk/)
-[Whisper on Windows](https://github.com/Purfview/whisper-standalone-win)
+
+* [Vosk](https://alphacephei.com/vosk/)
+* [Whisper on Windows](https://github.com/Purfview/whisper-standalone-win)
 
 ## Example - Offline Audio Transcription with [Vosk](https://alphacephei.com/vosk/)
 ```go
