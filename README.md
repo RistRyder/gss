@@ -1,7 +1,9 @@
 # gss - Go Subtitle Suite
 This library aims to provide functionality for manipulating subtitles and is currently pre-release.
 
-At the moment there is a transcription API to generate text from an input audio or video file. [Vosk](https://alphacephei.com/vosk/) is the only supported transcription method so far.
+At the moment there is a transcription API to generate text from an input audio or video file using the following:
+[Vosk](https://alphacephei.com/vosk/)
+[Whisper on Windows](https://github.com/Purfview/whisper-standalone-win)
 
 ## Example - Offline Audio Transcription with [Vosk](https://alphacephei.com/vosk/)
 ```go
@@ -19,20 +21,58 @@ import (
 )
 
 func main() {
-	transcriber, transcriberErr := vosk.New("/path/to/ffmpeg/binary", "/path/to/Vosk/models")
-	if transcriberErr != nil {
-		fmt.Println("Failed to create Vosk transcriber: ", transcriberErr)
+	transcriptionOpt, transcriptionOptErr := vosk.NewTranscriptionOptions("/path/to/ffmpeg/binary", "/path/to/Vosk/models")
+	if transcriptionOptErr != nil {
+		log.Fatalf("Failed to create transcription options: %s\n", transcriptionOptErr)
+	}
 
-		return
+	transcriber, transcriberErr := vosk.NewTranscriber(transcriptionOpt)
+	if transcriberErr != nil {
+		log.Fatalf("Failed to create Vosk transcriber: %s\n", transcriberErr)
 	}
 
 	audioStreamNumber := uint64(0)
 
 	transcription, transcriptionErr := transcriber.Transcribe(transcribers.NewTranscriptionOptions(audioStreamNumber, "/path/to/audio/or/video/file.mkv"))
 	if transcriberErr != nil {
-		fmt.Println("Failed to transcribe file: ", transcriptionErr)
+		log.Fatalf("Failed to transcribe file: %s\n", transcriptionErr)
+	}
 
-		return
+	for i, line := range transcription.Lines {
+		fmt.Printf("[%d][%f - %f] --> %s\n", i, line.StartTime, line.EndTime, line.Text)
+	}
+}
+```
+
+## Example - Offline Audio Transcription with [Whisper on Windows](https://github.com/Purfview/whisper-standalone-win)
+```go
+//See https://github.com/Purfview/whisper-standalone-win for more information, no extra steps are required after downloading
+
+package main
+
+import (
+	"fmt"
+
+	"github.com/ristryder/gss/transcribers"
+	"github.com/ristryder/gss/transcribers/whisperf"
+)
+
+func main() {
+	transcriptionOpt, transcriptionOptErr := whisperf.NewTranscriptionOptions("medium", "", "C:\\Path\\To\\Faster-Whisper-XXL_r245.4_windows\\Faster-Whisper-XXL\\faster-whisper-xxl.exe")
+	if transcriptionOptErr != nil {
+		log.Fatalf("Failed to create transcription options: %s\n", transcriptionOptErr)
+	}
+
+	transcriber, transcriberErr := whisperf.NewTranscriber(transcriptionOpt)
+	if transcriberErr != nil {
+		log.Fatalf("Failed to create Whisperf transcriber: %s\n", transcriberErr)
+	}
+
+	audioStreamNumber := uint64(0)
+
+	transcription, transcriptionErr := transcriber.Transcribe(transcribers.NewTranscriptionOptions(audioStreamNumber, "C:\\Path\\To\\Audio\\Or\\Video\\File.mkv"))
+	if transcriberErr != nil {
+		log.Fatalf("Failed to transcribe file: %s\n", transcriptionErr)
 	}
 
 	for i, line := range transcription.Lines {

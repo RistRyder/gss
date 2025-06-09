@@ -17,22 +17,20 @@ import (
 const sampleRate = 16000
 
 type Transcriber struct {
-	ffmpegPath string
-	modelPath  string
+	options TranscriptionOptions
 }
 
-func New(ffmpegPath, modelPath string) (*Transcriber, error) {
-	if _, statErr := os.Stat(ffmpegPath); errors.Is(statErr, fs.ErrNotExist) {
-		return nil, errors.Wrap(statErr, "ffmpeg binary not found")
-	}
-	if _, statErr := os.Stat(modelPath); errors.Is(statErr, fs.ErrNotExist) {
-		return nil, errors.Wrap(statErr, "model path not found")
+func NewTranscriber(options *TranscriptionOptions) (*Transcriber, error) {
+	if options == nil {
+		transcriptionOpt, transcriptionOptErr := DefaultTranscriptionOptions()
+		if transcriptionOptErr != nil {
+			return nil, transcriptionOptErr
+		}
+
+		return &Transcriber{options: *transcriptionOpt}, nil
 	}
 
-	return &Transcriber{
-		ffmpegPath: ffmpegPath,
-		modelPath:  modelPath,
-	}, nil
+	return &Transcriber{options: *options}, nil
 }
 
 func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*transcribers.TranscriptionResults, error) {
@@ -40,7 +38,7 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 		return nil, errors.Wrap(statErr, "input file not found")
 	}
 
-	model, modelErr := vosk.NewModel(t.modelPath)
+	model, modelErr := vosk.NewModel(t.options.modelPath)
 	if modelErr != nil {
 		return nil, errors.Wrap(modelErr, "failed to create Vosk model")
 	}
@@ -68,7 +66,7 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 	//-ac              | # of audio channels
 	//-map 0:a:N       | select Nth audio stream
 	//-vn              | no video output
-	ffmpegCmd := exec.Command(t.ffmpegPath, "-nostdin", "-vn", "-loglevel", "quiet", "-i", options.FullFileName, "-ar", strconv.Itoa(sampleRate), "-af", "volume=1.75", "-ac", "1", "-map", fmt.Sprintf("0:a:%d", options.AudioTrackNumber), "-f", "s16le", "-")
+	ffmpegCmd := exec.Command(t.options.ffmpegPath, "-nostdin", "-vn", "-loglevel", "quiet", "-i", options.FullFileName, "-ar", strconv.Itoa(sampleRate), "-af", "volume=1.75", "-ac", "1", "-map", fmt.Sprintf("0:a:%d", options.AudioTrackNumber), "-f", "s16le", "-")
 	stdoutPipe, pipeErr := ffmpegCmd.StdoutPipe()
 	if pipeErr != nil {
 		return nil, errors.Wrap(pipeErr, "failed to initialize pipe for ffmpeg stream")
