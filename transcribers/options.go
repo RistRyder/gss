@@ -1,9 +1,11 @@
 package transcribers
 
+import "github.com/ristryder/gss/common"
+
 type TranscriptionOptions struct {
 	AudioTrackNumber uint64
 	FullFileName     string
-	ProgressCallback func(TextLine)
+	ProgressCallback func(common.TextLine)
 }
 
 func NewTranscriptionOptions(audioTrackNumber uint64, fullFileName string) TranscriptionOptions {

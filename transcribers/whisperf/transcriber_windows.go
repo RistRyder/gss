@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/cockroachdb/errors"
+	"github.com/ristryder/gss/common"
 	"github.com/ristryder/gss/transcribers"
 )
 
@@ -19,11 +20,11 @@ type Transcriber struct {
 	options   TranscriptionOptions
 }
 
-func (t *Transcriber) createTextLine(textLine string) transcribers.TextLine {
+func (t *Transcriber) createTextLine(textLine string) common.TextLine {
 	if t.lineRegex == nil {
 		lineRegex, lineRegexErr := regexp.Compile("\\[(?P<fromH>\\d{0,2}):?(?P<fromM>\\d{2}):(?P<fromS>\\d{2})\\.(?P<fromMS>\\d{3}) --> (?P<toH>\\d{0,2}):?(?P<toM>\\d{2}):(?P<toS>\\d{2})\\.(?P<toMS>\\d{3})\\]  (?P<text>.+)")
 		if lineRegexErr != nil {
-			return transcribers.TextLine{}
+			return common.TextLine{}
 		}
 
 		t.lineRegex = lineRegex
@@ -46,7 +47,7 @@ func (t *Transcriber) createTextLine(textLine string) transcribers.TextLine {
 	endTime += getIntFromMatch("toH", matchResults) * 60 * 60
 	endTime += getIntFromMatch("toMS", matchResults) / 1000
 
-	return transcribers.TextLine{
+	return common.TextLine{
 		EndTime:   endTime,
 		StartTime: startTime,
 		Text:      matchResults["text"],
@@ -82,7 +83,7 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 
 	progressCallback := options.ProgressCallback
 	if progressCallback == nil {
-		progressCallback = func(t transcribers.TextLine) {}
+		progressCallback = func(t common.TextLine) {}
 	}
 
 	whisperFasterCmd := exec.Command(t.options.whisperFasterPath, options.FullFileName, "--beep_off", "-o", "NUL")
@@ -101,7 +102,7 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 		return nil, errors.Wrap(startErr, "failed to start faster-whisper")
 	}
 
-	results := []transcribers.TextLine{}
+	results := []common.TextLine{}
 
 	for stdoutScanner.Scan() {
 		textLine := t.createTextLine(stdoutScanner.Text())

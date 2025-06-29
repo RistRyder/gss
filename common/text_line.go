@@ -1,4 +1,4 @@
-package transcribers
+package common
 
 type TextLine struct {
 	EndTime   float64

@@ -1,5 +1,7 @@
 package transcribers
 
+import "github.com/ristryder/gss/common"
+
 type TranscriptionResults struct {
-	Lines []TextLine
+	Lines []common.TextLine
 }

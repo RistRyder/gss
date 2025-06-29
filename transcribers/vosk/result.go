@@ -3,7 +3,7 @@ package vosk
 import (
 	"encoding/json"
 
-	"github.com/ristryder/gss/transcribers"
+	"github.com/ristryder/gss/common"
 )
 
 type result struct {
@@ -22,8 +22,8 @@ func fromString(resultString string) result {
 	return res
 }
 
-func toTextLine(res result) transcribers.TextLine {
-	return transcribers.TextLine{
+func toTextLine(res result) common.TextLine {
+	return common.TextLine{
 		EndTime:   res.Words[len(res.Words)-1].EndTime,
 		StartTime: res.Words[0].StartTime,
 		Text:      res.Text,

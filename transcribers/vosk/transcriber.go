@@ -10,6 +10,7 @@ import (
 
 	vosk "github.com/alphacep/vosk-api/go"
 	"github.com/cockroachdb/errors"
+	"github.com/ristryder/gss/common"
 	"github.com/ristryder/gss/io"
 	"github.com/ristryder/gss/transcribers"
 )
@@ -58,7 +59,7 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 
 	progressCallback := options.ProgressCallback
 	if progressCallback == nil {
-		progressCallback = func(t transcribers.TextLine) {}
+		progressCallback = func(t common.TextLine) {}
 	}
 
 	//-ar              | sampling rate
@@ -82,7 +83,7 @@ func (t *Transcriber) Transcribe(options transcribers.TranscriptionOptions) (*tr
 		return nil, errors.Wrap(startErr, "failed to start ffmpeg")
 	}
 
-	results := []transcribers.TextLine{}
+	results := []common.TextLine{}
 
 	for stdoutScanner.Scan() {
 		if recognizer.AcceptWaveform(stdoutScanner.Bytes()) != 0 {
